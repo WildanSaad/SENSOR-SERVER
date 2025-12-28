@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sensor Data — Sensor Data Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { accent: '#7c3aed', soft: '#f8fafc' }, fontFamily: { sans: ['Inter','sans-serif'] } } } }
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-soft to-white flex items-center justify-center font-sans text-gray-800">
+  <div class="max-w-5xl w-full bg-white rounded-2xl shadow-lg p-8">
+    <nav class="flex items-center justify-between mb-6">
+      <a href="welcome.html" class="text-lg font-semibold text-accent">Sensor Data Server</a>
+      <div class="space-x-3">
+        <a href="admin-options.html" class="text-sm text-gray-600 hover:text-accent">Admin Options</a>
+        <a href="entry.html" class="text-sm text-gray-600 hover:text-accent">Add Sensor</a>
+      </div>
+    </nav>
+
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-2xl font-bold text-accent">Sensors</h2>
+      <button id="refreshBtn" class="bg-accent text-white px-4 py-2 rounded-lg hover:brightness-105">Refresh</button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border border-gray-200 rounded-lg">
+        <thead class="bg-accent text-white">
+          <tr>
+            <th class="px-4 py-2 text-left">Sensor ID</th>
+            <th class="px-4 py-2 text-left">Type</th>
+            <th class="px-4 py-2 text-left">Location</th>
+            <th class="px-4 py-2 text-left">Value</th>
+            <th class="px-4 py-2 text-left">Time</th>
+            <th class="px-4 py-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="sensorTable" class="divide-y divide-gray-200"></tbody>
+      </table>
+    </div>
+
+    <div id="msg" class="mt-4 text-center text-sm font-semibold"></div>
+  </div>
+
+  <script>
+    const table = document.getElementById('sensorTable');
+    const msg = document.getElementById('msg');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    async function loadSensors() {
+      table.innerHTML = `<tr><td colspan="6" class="px-4 py-3 text-center text-gray-500">Loading...</td></tr>`;
+      msg.textContent = "";
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/sensor-data');
+        const data = await res.json();
+
+        if (res.ok && Array.isArray(data)) {
+          table.innerHTML = "";
+          if (data.length === 0) {
+            table.innerHTML = `<tr><td colspan="6" class="px-4 py-3 text-center text-gray-500">No sensor data</td></tr>`;
+            return;
+          }
+          data.forEach(d => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td class="px-4 py-2">${d.sensor_id}</td>
+              <td class="px-4 py-2">${d.sensor_type}</td>
+              <td class="px-4 py-2">${d.location}</td>
+              <td class="px-4 py-2">${d.value}</td>
+              <td class="px-4 py-2">${d.timestamp}</td>
+              <td class="px-4 py-2">
+                <button class="bg-red-600 text-white px-3 py-1 rounded hover:brightness-110" onclick="deleteSensor('${d.sensor_id}')">Delete</button>
+              </td>
+            `;
+            table.appendChild(row);
+          });
+        } else {
+          table.innerHTML = `<tr><td colspan="6" class="px-4 py-3 text-center text-red-600">Failed to load sensors</td></tr>`;
+        }
+      } catch (err) {
+        table.innerHTML = `<tr><td colspan="6" class="px-4 py-3 text-center text-red-600">Network error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function deleteSensor(sensorId) {
+      msg.textContent = "";
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/sensor/${sensorId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          msg.textContent = `✅ ${data.message}`;
+          msg.className = "mt-4 text-center text-green-600 font-semibold";
+          loadSensors();
+        } else {
+          msg.textContent = `❌ ${data.message || 'Delete failed'}`;
+          msg.className = "mt-4 text-center text-red-600 font-semibold";
+        }
+      } catch (err) {
+        msg.textContent = `❌ Network error: ${err.message}`;
+        msg.className = "mt-4 text-center text-red-600 font-semibold";
+      }
+    }
+
+    refreshBtn.addEventListener('click', loadSensors);
+    loadSensors();
+  </script>
+</body>
+</html>

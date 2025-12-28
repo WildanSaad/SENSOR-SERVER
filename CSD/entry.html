@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sensor Entry — Sensor Data Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { accent: '#7c3aed', soft: '#f8fafc' },
+          fontFamily: { sans: ['Inter','sans-serif'] }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-soft to-white flex items-center justify-center font-sans text-gray-800">
+  <div class="max-w-xl w-full bg-white rounded-2xl shadow-lg p-8">
+    <nav class="flex items-center justify-between mb-6">
+      <a href="welcome.html" class="text-lg font-semibold text-accent">Sensor Data Server</a>
+      <div class="space-x-3">
+        <a href="admin-options.html" class="text-sm text-gray-600 hover:text-accent">Admin Options</a>
+        <a href="display.html" class="text-sm text-gray-600 hover:text-accent">Sensors</a>
+      </div>
+    </nav>
+
+    <h2 class="text-2xl font-bold text-accent mb-6">Add New Sensor (Admins Only)</h2>
+    <form id="sensorForm" class="space-y-4" autocomplete="off">
+      <input type="text" id="sensor_id" placeholder="Sensor ID" class="w-full border px-3 py-2 rounded" required>
+      <input type="text" id="sensor_type" placeholder="Sensor Type" class="w-full border px-3 py-2 rounded" required>
+      <input type="text" id="location" placeholder="Location (lat,long)" class="w-full border px-3 py-2 rounded" required>
+      <input type="text" id="value" placeholder="Value" class="w-full border px-3 py-2 rounded" required>
+
+      <div class="flex gap-4 justify-between">
+        <a href="admin-options.html" class="w-1/2 bg-gray-200 text-gray-700 py-2 rounded-lg text-center hover:bg-gray-300">← Back</a>
+        <button type="submit" class="w-1/2 bg-accent text-white py-2 rounded-lg shadow hover:brightness-105">Add Sensor</button>
+      </div>
+    </form>
+
+    <div id="messageBox" class="mt-4 text-center text-sm font-semibold"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('sensorForm');
+    const messageBox = document.getElementById('messageBox');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const sensor_id = document.getElementById('sensor_id').value.trim();
+      const sensor_type = document.getElementById('sensor_type').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const value = document.getElementById('value').value.trim();
+
+      if (!sensor_id || !sensor_type || !location || !value) {
+        messageBox.textContent = "❌ All fields are required.";
+        messageBox.className = "mt-4 text-center text-red-600 font-semibold";
+        return;
+      }
+
+      const payload = { sensor_id, sensor_type, location, value };
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/sensor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        const now = new Date().toLocaleString();
+
+        if (res.ok) {
+          form.reset();
+          messageBox.textContent = `✅ ${result.message} | ${now}`;
+          messageBox.className = "mt-4 text-center text-green-600 font-semibold";
+          setTimeout(() => { window.location.href = "admin-options.html"; }, 2000);
+        } else {
+          messageBox.textContent = `❌ ${result.message} | ${now}`;
+          messageBox.className = "mt-4 text-center text-red-600 font-semibold";
+        }
+      } catch (err) {
+        messageBox.textContent = `❌ Network error: ${err.message}`;
+        messageBox.className = "mt-4 text-center text-red-600 font-semibold";
+      }
+    });
+  </script>
+</body>
+</html>

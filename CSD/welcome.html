@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sensor Data Server</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              accent: '#7c3aed',
+              soft: '#f8fafc',
+              deep: '#1e293b'
+            },
+            fontFamily: { sans: ['Inter', 'sans-serif'] }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-soft via-white to-soft font-sans text-gray-800">
+    <h1 class="text-6xl font-extrabold text-accent drop-shadow-lg tracking-wide mb-10">
+      Sensor Data Server
+    </h1>
+
+    <div class="flex flex-col gap-4 w-72">
+      <!-- Admin -->
+      <a href="login.html" class="px-6 py-3 bg-accent text-white rounded-lg shadow hover:brightness-105 transition text-center">
+        Admin
+      </a>
+
+      <!-- User -->
+      <a href="location.html" class="px-6 py-3 border border-accent text-accent rounded-lg hover:bg-accent/10 transition text-center">
+        User
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-12 text-sm text-gray-500">
+      © 2025 Sensor Data Server — Developed by Wildan
+    </footer>
+  </body>
+</html>

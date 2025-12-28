@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>User Location — Sensor Data Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-gray-50 to-white font-sans text-gray-800">
+
+  <div class="max-w-md mx-auto p-6 bg-white rounded-2xl shadow-lg mt-10">
+    <h2 class="text-2xl font-bold text-purple-600 mb-6 text-center">User Location</h2>
+
+    <!-- Coordinates form -->
+    <form id="coordForm" class="space-y-4" autocomplete="off">
+      <input type="number" step="any" id="latitude" placeholder="Latitude" 
+             class="w-full border px-3 py-2 rounded" required autocomplete="off">
+      <input type="number" step="any" id="longitude" placeholder="Longitude" 
+             class="w-full border px-3 py-2 rounded" required autocomplete="off">
+      <div class="flex gap-4">
+        <button type="submit" class="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:brightness-105">
+          Submit Coordinates
+        </button>
+        <button type="button" id="gpsBtn" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+          Use GPS
+        </button>
+      </div>
+    </form>
+
+    <!-- Success message -->
+    <p id="successMsg" class="hidden mt-4 text-green-600 font-semibold text-center">
+      Operation completed successfully
+    </p>
+
+    <!-- Back button -->
+    <div class="mt-6 text-center">
+      <a href="welcome.html" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg text-center hover:bg-gray-300 block">
+        ← Back
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const coordForm = document.getElementById('coordForm');
+    const gpsBtn = document.getElementById('gpsBtn');
+    const successMsg = document.getElementById('successMsg');
+
+    // Manual coordinates submit
+    coordForm.addEventListener('submit', async (e) => {
+      e.preventDefault(); // prevent form refresh
+      const latitude = document.getElementById('latitude').value;
+      const longitude = document.getElementById('longitude').value;
+      await sendLocation(latitude, longitude);
+    });
+
+    // GPS button only sets values
+    gpsBtn.addEventListener('click', () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          document.getElementById('latitude').value = lat;
+          document.getElementById('longitude').value = lng;
+        }, (err) => {
+          alert(`Unable to get location: ${err.message}`);
+        });
+      } else {
+        alert("Geolocation not supported in this browser.");
+      }
+    });
+
+    // Send location to server
+    async function sendLocation(latitude, longitude) {
+      try {
+        const res = await fetch('http://127.0.0.1:5000/add-location', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ latitude, longitude })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // Show success message permanently
+          successMsg.classList.remove('hidden');
+        } else {
+          alert(data.message || "Error occurred");
+        }
+      } catch (err) {
+        alert(`Network error: ${err.message}`);
+      }
+    }
+  </script>
+</body>
+</html>

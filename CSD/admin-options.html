@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin Options — Sensor Data Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { accent: '#7c3aed', soft: '#f8fafc' },
+          fontFamily: { sans: ['Inter','sans-serif'] }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-soft to-white flex items-center justify-center font-sans text-gray-800">
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
+    <h1 class="text-3xl font-extrabold text-accent text-center mb-2">Admin Options</h1>
+    <p class="text-center text-sm text-gray-600 mb-6">
+      Manage sensors, view users’ locations, and control admin accounts.
+    </p>
+
+    <div class="flex flex-col gap-4">
+      <!-- يعرض بيانات المستخدمين العاديين -->
+      <a href="users.html"
+         class="w-full bg-accent text-white py-2 rounded-lg text-center hover:brightness-105">
+        User info (locations & times)
+      </a>
+
+      <!-- عرض بيانات الحساسات -->
+      <a href="display.html"
+         class="w-full bg-accent text-white py-2 rounded-lg text-center hover:brightness-105">
+        View sensor data
+      </a>
+
+      <!-- إضافة حساس جديد -->
+      <a href="entry.html"
+         class="w-full bg-accent text-white py-2 rounded-lg text-center hover:brightness-105">
+        Add new sensor
+      </a>
+
+      <!-- إدارة حسابات الأدمن -->
+      <a href="admins.html"
+         class="w-full bg-accent text-white py-2 rounded-lg text-center hover:brightness-105">
+        Manage admin accounts
+      </a>
+    </div>
+
+    <div class="mt-6 text-center">
+      <a href="welcome.html" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg text-center hover:bg-gray-300">
+        ← Back
+      </a>
+    </div>
+  </div>
+</body>
+</html>

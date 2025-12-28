@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Users Info — Sensor Data Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { accent: '#7c3aed', soft: '#f8fafc' },
+          fontFamily: { sans: ['Inter','sans-serif'] }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-soft to-white font-sans text-gray-800">
+  <div class="max-w-6xl w-full bg-white rounded-2xl shadow-lg p-8">
+    <nav class="flex items-center justify-between mb-6">
+      <a href="welcome.html" class="text-lg font-semibold text-accent">Sensor Data Server</a>
+      <div class="space-x-3">
+        <a href="admin-options.html" class="text-sm text-gray-600 hover:text-accent">Admin Options</a>
+        <a href="display.html" class="text-sm text-gray-600 hover:text-accent">Sensors</a>
+      </div>
+    </nav>
+
+    <h2 class="text-2xl font-bold text-accent mb-2 text-center">Users’ Locations & Times</h2>
+    <p class="text-center text-sm text-gray-600 mb-6">
+      Regular users’ submitted coordinates and presence times.
+    </p>
+
+    <!-- جدول عرض المواقع -->
+    <div class="overflow-x-auto bg-white rounded-2xl shadow">
+      <table class="min-w-full">
+        <thead class="bg-accent text-white">
+          <tr>
+            <th class="px-4 py-2 text-left">User ID</th>
+            <th class="px-4 py-2 text-left">Latitude</th>
+            <th class="px-4 py-2 text-left">Longitude</th>
+            <th class="px-4 py-2 text-left">Timestamp</th>
+            <th class="px-4 py-2 text-left">Alerts</th>
+            <th class="px-4 py-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable" class="divide-y divide-gray-100 bg-white"></tbody>
+      </table>
+    </div>
+
+    <div class="mt-6 flex items-center justify-between">
+      <a href="admin-options.html" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">← Back</a>
+      <button id="refreshBtn" class="px-4 py-2 bg-accent text-white rounded-lg hover:brightness-105">Refresh</button>
+    </div>
+
+    <div id="msg" class="mt-4 text-center text-sm font-semibold"></div>
+  </div>
+
+  <script>
+    const table = document.getElementById('usersTable');
+    const msg = document.getElementById('msg');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    async function loadUserLocations() {
+      table.innerHTML = `<tr><td colspan="6" class="px-4 py-3 text-center text-gray-500">Loading...</td></tr>`;
+      msg.textContent = "";
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/user-locations', { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+
+        if (res.ok && Array.isArray(data)) {
+          table.innerHTML = "";
+          if (data.length === 0) {
+            table.innerHTML = `<tr><td colspan="6" class="px-4 py-3 text-center text-gray-500">No records found</td></tr>`;
+            return;
+          }
+
+          data.forEach(u => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td class="px-4 py-2">${u.user_id || '-'}</td>
+              <td class="px-4 py-2">${u.latitude || '-'}</td>
+              <td class="px-4 py-2">${u.longitude || '-'}</td>
+              <td class="px-4 py-2">${u.timestamp || '-'}</td>
+              <td class="px-4 py-2 text-sm text-red-600">${u.alerts && u.alerts.length > 0 ? u.alerts.join(", ") : '-'}</td>
+              <td class="px-4 py-2">
+                <button onclick="deleteUser(${u.user_id})" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+              </td>
+            `;
+            table.appendChild(row);
+          });
+        } else {
+          table.innerHTML = `<tr><td colspan="6" class="px-4 py-3 text-center text-red-600">Failed to load user locations</td></tr>`;
+        }
+      } catch (err) {
+        table.innerHTML = `<tr><td colspan="6" class="px-4 py-3 text-center text-red-600">Network error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function deleteUser(userId) {
+      if (!confirm("Are you sure you want to delete this user?")) return;
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/users/${userId}`, { method: 'DELETE' });
+
+        const contentType = res.headers.get("content-type");
+        if (!res.ok || !contentType || !contentType.includes("application/json")) {
+          const text = await res.text();
+          throw new Error(text);
+        }
+
+        const data = await res.json();
+        msg.textContent = data.message || "User deleted";
+        msg.className = "mt-4 text-center text-sm font-semibold text-green-600";
+        loadUserLocations();
+      } catch (err) {
+        msg.textContent = "Network error: " + err.message;
+        msg.className = "mt-4 text-center text-sm font-semibold text-red-600";
+      }
+    }
+
+    refreshBtn.onclick = loadUserLocations;
+    loadUserLocations();
+  </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin Login — Sensor Data Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { accent: '#7c3aed', soft: '#f8fafc' },
+          fontFamily: { sans: ['Inter','sans-serif'] }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-soft to-white flex items-center justify-center font-sans text-gray-800">
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
+    <h1 class="text-3xl font-extrabold text-accent text-center mb-6">Admin Login</h1>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="space-y-4" autocomplete="off">
+      <input type="text" id="loginUsername" placeholder="Username" class="w-full border px-3 py-2 rounded" required>
+      <input type="password" id="loginPassword" placeholder="Password" class="w-full border px-3 py-2 rounded" required>
+
+      <div class="flex gap-4">
+        <button type="submit" class="w-1/2 bg-accent text-white py-2 rounded-lg shadow hover:brightness-105">
+          Sign in
+        </button>
+        <a href="welcome.html" class="w-1/2 bg-accent text-white py-2 rounded-lg text-center shadow hover:brightness-105">
+          ← Back
+        </a>
+      </div>
+
+      <button type="button" id="showRegister" class="w-full mt-4 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300">
+        Create Account
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="registerForm" class="space-y-4 hidden mt-6" autocomplete="off">
+      <!-- زر رجوع فوق الفورم -->
+      <button type="button" id="backToLoginTop" class="w-full mb-4 bg-accent text-white py-2 rounded-lg shadow hover:brightness-105">
+        ← Back to Login
+      </button>
+
+      <input type="text" id="regUsername" placeholder="New Username" class="w-full border px-3 py-2 rounded" required>
+      <input type="password" id="regPassword" placeholder="New Password" class="w-full border px-3 py-2 rounded" required>
+
+      <div class="flex gap-4">
+        <button type="submit" class="w-1/2 bg-accent text-white py-2 rounded-lg shadow hover:brightness-105">
+          Register
+        </button>
+        <button type="button" id="backToLogin" class="w-1/2 bg-accent text-white py-2 rounded-lg shadow hover:brightness-105">
+          ← Back
+        </button>
+      </div>
+    </form>
+
+    <div id="msg" class="mt-4 text-center text-sm font-semibold"></div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const showRegister = document.getElementById('showRegister');
+    const backToLogin = document.getElementById('backToLogin');
+    const backToLoginTop = document.getElementById('backToLoginTop');
+    const msg = document.getElementById('msg');
+
+    showRegister.onclick = () => {
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      msg.textContent = "";
+    };
+
+    backToLogin.onclick = () => {
+      registerForm.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+      msg.textContent = "";
+    };
+
+    backToLoginTop.onclick = () => {
+      registerForm.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+      msg.textContent = "";
+    };
+
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+
+      const payload = {
+        username: document.getElementById('loginUsername').value.trim(),
+        password: document.getElementById('loginPassword').value.trim()
+      };
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          msg.textContent = "✅ Login successful. Redirecting…";
+          msg.className = "mt-4 text-center text-green-600 font-semibold";
+          window.location.href = "admin-options.html"; // تحويل مباشر
+        } else {
+          msg.textContent = `❌ ${data.message || 'Login failed'}`;
+          msg.className = "mt-4 text-center text-red-600 font-semibold";
+        }
+      } catch (err) {
+        msg.textContent = `❌ Network error: ${err.message}`;
+        msg.className = "mt-4 text-center text-red-600 font-semibold";
+      }
+    };
+
+    registerForm.onsubmit = async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+
+      const payload = {
+        username: document.getElementById('regUsername').value.trim(),
+        password: document.getElementById('regPassword').value.trim()
+      };
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/admin-register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          msg.textContent = "✅ Account created successfully! Redirecting…";
+          msg.className = "mt-4 text-center text-green-600 font-semibold";
+          window.location.href = "admin-options.html"; // تحويل مباشر
+        } else {
+          msg.textContent = `❌ ${data.message || 'Registration failed'}`;
+          msg.className = "mt-4 text-center text-red-600 font-semibold";
+        }
+      } catch (err) {
+        msg.textContent = `❌ Network error: ${err.message}`;
+        msg.className = "mt-4 text-center text-red-600 font-semibold";
+      }
+    };
+  </script>
+</body>
+</html>
